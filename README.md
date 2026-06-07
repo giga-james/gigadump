@@ -8,7 +8,7 @@ pay-as-you-go API billing**.
 ## Install
 
 ```
-/plugin marketplace add kunggaochicken/gigadump
+/plugin marketplace add giga-james/gigadump
 /plugin install gigadump
 ```
 
