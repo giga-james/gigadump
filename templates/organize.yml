@@ -10,14 +10,12 @@ concurrency:
   group: organize-${{ github.ref }}
   cancel-in-progress: false
 
-permissions:
-  contents: write
-
 jobs:
   organize:
     # Loop guard: skip the organizer's own commits.
     if: ${{ !contains(github.event.head_commit.message, '[skip organize]') }}
     runs-on: ubuntu-latest
+    # Scoped to the one job that pushes the reorganized tree back.
     permissions:
       contents: write
     steps:
