@@ -1,0 +1,13 @@
+{
+  "name": "gigadump",
+  "owner": {
+    "name": "James Gao"
+  },
+  "plugins": [
+    {
+      "name": "gigadump",
+      "source": "./",
+      "description": "Self-organizing idea dump. Capture ideas with /gigadump-idea; a GitHub Action files them into a coherent tree and maintains an index — on your Claude subscription, no API billing."
+    }
+  ]
+}

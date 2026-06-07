@@ -1,0 +1,57 @@
+name: organize
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two organizer runs overlap.
+concurrency:
+  group: organize-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  organize:
+    # Loop guard: skip the organizer's own commits.
+    if: ${{ !contains(github.event.head_commit.message, '[skip organize]') }}
+    runs-on: ubuntu-latest
+    # Scoped to the one job that pushes the reorganized tree back.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine mode
+        id: mode
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ] || printf '%s' "$MSG" | grep -q '\[reorg-all\]'; then
+            echo "reorg=full" >> "$GITHUB_OUTPUT"
+          else
+            echo "reorg=new" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Organize with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Read .github/organize-prompt.md and follow it exactly.
+            Mode: ${{ steps.mode.outputs.reorg }}
+          claude_args: "--allowedTools Read,Write,Edit,Glob,Grep,Bash(mv:*),Bash(mkdir:*),Bash(ls:*)"
+
+      - name: Commit and push
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "gigadump-bot"
+            git config user.email "gigadump-bot@users.noreply.github.com"
+            git add -A
+            git commit -m "chore: organize ideas [skip organize]"
+            git push
+          else
+            echo "Nothing to organize."
+          fi
