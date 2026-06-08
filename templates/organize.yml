@@ -58,9 +58,11 @@ jobs:
     # Only the dispatched invocation does the real work.
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    # Scoped to the one job that pushes the reorganized tree back.
     permissions:
+      # contents: write — the job pushes the reorganized tree back.
+      # id-token: write — claude-code-action exchanges an OIDC token to auth.
       contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
