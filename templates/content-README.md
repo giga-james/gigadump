@@ -19,6 +19,22 @@ A GitHub Action organizes new root files into category folders and regenerates
 - Commit message containing `[reorg-all]`, or the manual **Run workflow** button
   → full re-organization of the whole tree.
 
+## Auto-synthesize sessions (optional)
+
+When `autoSynthesize` is `true` in `~/.config/gigadump/config.json`, the gigadump
+plugin installs a `SessionEnd` hook that, at the end of each **substantial**
+Claude Code session (one with file edits, a commit, or several turns), summarizes
+the work plus any ideas that surfaced and pushes an entry here — the organizer
+then files it like any other dump. Trivial sessions are skipped.
+
+- **Turn it on:** set `"autoSynthesize": true` in the config (the `/gigadump-idea`
+  bootstrap asks once).
+- **Turn it off:** set it back to `false`.
+- **Debugging:** the hook logs each run to `~/.config/gigadump/synthesize.log`.
+
+Synthesis runs in the background on your Claude subscription via the `claude`
+CLI; it never blocks or delays your session.
+
 ## One-time setup
 
 1. Create this repo on GitHub and push.
