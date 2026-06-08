@@ -1,8 +1,21 @@
 name: organize
 
+# anthropics/claude-code-action does not support the `push` event, so we never
+# call it directly from a push. Instead, a push to the default branch fires a
+# lightweight dispatch job that re-triggers this workflow via workflow_dispatch
+# (an event the action *does* support), passing along the computed mode. The
+# Claude job then runs only in that dispatched invocation.
 on:
   push:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Organization mode"
+        type: choice
+        default: full
+        options:
+          - full
+          - new
 
 # Never let two organizer runs overlap.
 concurrency:
@@ -10,13 +23,40 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  organize:
-    # Run only on the repo's default branch (whatever it's named — main, master, …)
-    # or a manual dispatch; and skip the organizer's own commits (loop guard).
+  # On a push to the default branch (excluding the organizer's own commits),
+  # re-dispatch this workflow as a workflow_dispatch with the right mode.
+  dispatch:
     if: >-
-      ${{ github.event_name == 'workflow_dispatch' ||
-          (github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
-           !contains(github.event.head_commit.message, '[skip organize]')) }}
+      ${{ github.event_name == 'push' &&
+          github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+          !contains(github.event.head_commit.message, '[skip organize]') }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Determine mode
+        id: mode
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if printf '%s' "$MSG" | grep -q '\[reorg-all\]'; then
+            echo "reorg=full" >> "$GITHUB_OUTPUT"
+          else
+            echo "reorg=new" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger organizer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run organize.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "${{ github.event.repository.default_branch }}" \
+            -f mode="${{ steps.mode.outputs.reorg }}"
+
+  organize:
+    # Only the dispatched invocation does the real work.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     # Scoped to the one job that pushes the reorganized tree back.
     permissions:
@@ -26,25 +66,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Determine mode
-        id: mode
-        env:
-          MSG: ${{ github.event.head_commit.message }}
-          EVENT: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT" = "workflow_dispatch" ] || printf '%s' "$MSG" | grep -q '\[reorg-all\]'; then
-            echo "reorg=full" >> "$GITHUB_OUTPUT"
-          else
-            echo "reorg=new" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Organize with Claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             Read .github/organize-prompt.md and follow it exactly.
-            Mode: ${{ steps.mode.outputs.reorg }}
+            Mode: ${{ inputs.mode }}
           claude_args: "--allowedTools Read,Write,Edit,Glob,Grep,Bash(mv:*),Bash(mkdir:*),Bash(ls:*)"
 
       - name: Commit and push
