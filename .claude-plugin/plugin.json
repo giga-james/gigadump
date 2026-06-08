@@ -1,7 +1,7 @@
 {
   "name": "gigadump",
   "description": "Self-organizing idea dump for Claude Code. /gigadump-idea guides you through capturing an idea, files it into an auto-organizing repo, and maintains INDEX.md. Organizing runs in CI on your Claude subscription (OAuth token) — no API billing.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "James Gao"
   },
