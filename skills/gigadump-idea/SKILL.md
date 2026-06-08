@@ -53,8 +53,14 @@ c. Find the plugin's bundled templates. They live at `"$CLAUDE_PLUGIN_ROOT/templ
    _Auto-maintained by gigadump. Do not edit by hand._
    ```
 
-d. Write `~/.config/gigadump/config.json` (create `~/.config/gigadump/` if
-   needed) with `dumpRepoPath` = `DUMP` and `defaultStatus` = `seed`.
+d. Ask one yes/no question: "Auto-synthesize each Claude Code session into this
+   dump? When on, at the end of every substantial session a hook summarizes the
+   work + ideas and pushes an entry here for the organizer to file. (y/n)"
+   Then write `~/.config/gigadump/config.json` (create `~/.config/gigadump/` if
+   needed) with `dumpRepoPath` = `DUMP`, `defaultStatus` = `seed`, and
+   `autoSynthesize` = the boolean answer (default `false` if they decline or are
+   unsure). On a reused repo, preserve any existing `autoSynthesize` value rather
+   than overwriting it.
 
 e. Print the one-time GitHub setup checklist (from `$DUMP/README.md`) **only if
    the repo still needs it** — i.e. a new repo, or a reused repo with no git
