@@ -5,7 +5,8 @@ A self-organizing dump of ideas, scaffolded by
 
 ## Capture an idea
 
-- **Guided:** run `/gigadump-idea` in Claude Code, then commit + push.
+- **Guided:** run `/gigadump-idea` in Claude Code — it writes the idea and
+  offers to commit + push it for you.
 - **Raw dump:** drop any file (`.md`, `.html`, `.txt`, …) in the repo root,
   commit, and push to `main`.
 

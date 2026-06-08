@@ -93,23 +93,30 @@ d. In `## Related`, add `[[links]]` to any clearly-related existing ideas you
 
 e. Regenerate `$DUMP/INDEX.md` per the format in `CLAUDE.md`.
 
-### 5. Hand off
+### 5. Hand off — offer to commit + push
 
 Tell the user the path written. Then:
 
-- If `$DUMP` has a git remote → remind them to commit + push (the organizer runs
-  on push to the default branch):
-  ```
-  git -C <DUMP> add -A && git -C <DUMP> commit -m "idea: <title>" && git -C <DUMP> push
-  ```
-- If there is **no remote yet** (a freshly-created repo) → tell them to finish
-  the one-time setup first (create the GitHub repo, add the remote, push) per the
-  checklist from step 2e, then commit. Don't suggest a `push` that will fail.
+- If `$DUMP` has a git remote → **offer to commit and push it for them** (the
+  organizer runs on push to the default branch). Ask something like: "Want me to
+  commit and push this so the organizer files it? (y/n)".
+  - If they say yes → run it:
+    ```
+    git -C <DUMP> add -A && git -C <DUMP> commit -m "idea: <title>" && git -C <DUMP> push
+    ```
+    Then confirm it pushed and that the organize workflow will run.
+  - If they say no → leave it staged for them and print the same command so they
+    can run it later.
+- If there is **no remote yet** (a freshly-created repo) → don't offer to push.
+  Tell them to finish the one-time setup first (create the GitHub repo, add the
+  remote) per the checklist from step 2e. You may still offer to `git add` +
+  `commit` locally, but never suggest a `push` that will fail.
 
 ## Constraints
 
 - NEVER invent idea content the user didn't express. Empty sections are fine.
-- NEVER commit or push automatically — leave that to the user.
+- NEVER commit or push without first offering and getting a yes — the commit +
+  push in step 5 is opt-in, not automatic.
 - ALWAYS file the idea into a folder (never leave it in root), so the CI
   organizer no-ops on the resulting push.
 - If `dumpRepoPath` in config points to a missing directory, re-run Bootstrap.
