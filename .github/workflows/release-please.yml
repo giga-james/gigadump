@@ -1,0 +1,25 @@
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+# Grant the GITHUB_TOKEN the scopes release-please needs, per-workflow, so the
+# repo-level default workflow permission can stay at "read".
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # config-file / manifest-file default to release-please-config.json
+          # and .release-please-manifest.json in the repo root.
