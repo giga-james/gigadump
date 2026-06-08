@@ -36,4 +36,12 @@ write_cfg "{\"autoSynthesize\": true, \"dumpRepoPath\": \"$TMP/nope\"}"
 # Missing config file -> fail.
 ( resolve_dump "$TMP/missing.json" >/dev/null ); assert_eq "1" "$?" "resolve_dump fails when config missing"
 
+# --- is_substantial ---
+FX="$HERE/fixtures"
+( is_substantial "$FX/trivial.jsonl" ); assert_eq "1" "$?" "trivial session is not substantial"
+( is_substantial "$FX/edits.jsonl" );   assert_eq "0" "$?" "session with edit is substantial"
+( is_substantial "$FX/commit.jsonl" );  assert_eq "0" "$?" "session with git commit is substantial"
+( is_substantial "$FX/turns.jsonl" );   assert_eq "0" "$?" "session with >=6 turns is substantial"
+( is_substantial "$FX/missing.jsonl" ); assert_eq "1" "$?" "missing transcript is not substantial"
+
 finish

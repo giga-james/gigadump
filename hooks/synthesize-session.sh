@@ -29,6 +29,18 @@ resolve_dump() {
   printf '%s' "$dump"
 }
 
+# Substance filter. Returns 0 if the transcript shows real work.
+is_substantial() {
+  local t="${1:-}"
+  [[ -f "$t" ]] || return 1
+  command -v jq >/dev/null 2>&1 || return 1
+  local edits commits turns
+  edits="$(jq -rs '[.[] | select(.type=="assistant") | .message.content[]? | select(.type=="tool_use" and (.name=="Edit" or .name=="Write" or .name=="NotebookEdit"))] | length' "$t" 2>/dev/null || echo 0)"
+  commits="$(jq -rs '[.[] | select(.type=="assistant") | .message.content[]? | select(.type=="tool_use" and .name=="Bash") | (.input.command // "") | select(test("git commit"))] | length' "$t" 2>/dev/null || echo 0)"
+  turns="$(jq -rs '[.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text")] | length' "$t" 2>/dev/null || echo 0)"
+  [[ "${edits:-0}" -gt 0 || "${commits:-0}" -gt 0 || "${turns:-0}" -ge "$GIGADUMP_MIN_TURNS" ]]
+}
+
 # Run main only when executed directly, not when sourced by tests.
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   : # main added in Task 4
