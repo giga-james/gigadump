@@ -64,8 +64,17 @@ write_cfg "{\"autoSynthesize\": true, \"dumpRepoPath\": \"$TMP/dump\"}"
 out="$(decide "$(mk_input "$FX/trivial.jsonl")")"
 assert_eq "skip trivial" "$out" "decide skips trivial session"
 
-# Opted in + substantial -> proceed with dump + transcript.
+# Opted in + substantial -> proceed (status word only, no paths).
 out="$(decide "$(mk_input "$FX/edits.jsonl")")"
-assert_eq "proceed $TMP/dump $FX/edits.jsonl" "$out" "decide proceeds on substantial session"
+assert_eq "proceed" "$out" "decide proceeds on substantial session"
+
+# --- space-in-path regression (entrypoint level) ---
+mkdir -p "$TMP/my dump" && git -C "$TMP/my dump" init -q
+printf '%s' "{\"autoSynthesize\":true,\"dumpRepoPath\":\"$TMP/my dump\"}" > "$TMP/space-config.json"
+echo "{\"transcript_path\":\"$FX/edits.jsonl\"}" \
+  | GIGADUMP_CONFIG="$TMP/space-config.json" GIGADUMP_LOG="$TMP/space.log" \
+    bash "$HERE/../synthesize-session.sh"
+grep -q "proceed: .* -> $TMP/my dump$" "$TMP/space.log" 2>/dev/null
+assert_eq "0" "$?" "space in dump path: proceed log contains full spaced path"
 
 finish

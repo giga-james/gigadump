@@ -868,6 +868,6 @@ git commit -m "test: verify gigadump session synthesis end-to-end" || echo "noth
 
 ## Notes / known limitations
 
-- Dump paths containing spaces would break the space-delimited `decide` output parsing. gigadump paths are not expected to contain spaces; revisit if that assumption breaks.
+- Paths with spaces are supported: `decide` returns a status word only (`proceed` or `skip <reason>`); `main` re-resolves dump and transcript paths with proper quoting, so word-splitting never occurs.
 - Very long transcripts are truncated to the last `GIGADUMP_MAX_CHARS` (default 60k) chars before synthesis — a simple cost bound, not semantic selection.
 - The hook depends on `jq`, `git`, and the `claude` CLI being on PATH; any missing one makes the hook a silent no-op (logged).

@@ -42,27 +42,27 @@ is_substantial() {
 }
 
 # Decide whether to synthesize.
-# Prints "skip <reason>" or "proceed <dump> <transcript>".
+# Prints "skip <reason>" or "proceed" (paths are NOT included — re-resolved in main).
 decide() {
   local input="$1" dump transcript
   if is_reentrant; then printf 'skip reentrant'; return; fi
-  dump="$(resolve_dump)" || { printf 'skip not-opted-in'; return; }
+  resolve_dump >/dev/null || { printf 'skip not-opted-in'; return; }
   transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null)"
   [[ -n "$transcript" ]] || { printf 'skip no-transcript'; return; }
   is_substantial "$transcript" || { printf 'skip trivial'; return; }
-  printf 'proceed %s %s' "$dump" "$transcript"
+  printf 'proceed'
 }
 
 main() {
   local input; input="$(cat)"
   local decision; decision="$(decide "$input")"
-  # shellcheck disable=SC2086
-  set -- $decision
-  if [[ "${1:-}" != "proceed" ]]; then
-    log "skip: ${2:-}"
+  if [[ "$decision" != "proceed" ]]; then
+    log "skip: ${decision#skip }"
     exit 0
   fi
-  local dump="$2" transcript="$3"
+  # Re-resolve paths with proper quoting — never word-split them.
+  local dump; dump="$(resolve_dump)"
+  local transcript; transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null)"
   log "proceed: $transcript -> $dump"
   # Detach so SessionEnd does not block the terminal. nohup is portable
   # (macOS lacks setsid). The child is reparented and survives hook exit.

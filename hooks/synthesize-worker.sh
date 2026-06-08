@@ -89,7 +89,7 @@ main() {
   } > "$file" || { log "write failed"; exit 0; }
   log "wrote $file"
 
-  git -C "$DUMP" add -A 2>>"$GIGADUMP_LOG" || { log "git add failed"; exit 0; }
+  git -C "$DUMP" add -- "$file" 2>>"$GIGADUMP_LOG" || { log "git add failed"; exit 0; }
   git -C "$DUMP" commit -q -m "session: $title" 2>>"$GIGADUMP_LOG" || { log "git commit failed"; exit 0; }
   if git -C "$DUMP" remote get-url origin >/dev/null 2>&1; then
     git -C "$DUMP" push -q 2>>"$GIGADUMP_LOG" && log "pushed" || log "push failed"
