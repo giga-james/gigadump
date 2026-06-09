@@ -44,8 +44,6 @@ c. Find the plugin's bundled templates. They live at `"$CLAUDE_PLUGIN_ROOT/templ
    `TPL=$(find ~/.claude/plugins -type d -path '*gigadump*/templates' 2>/dev/null | head -1)`
    Copy each template into `DUMP`, **skipping any file that already exists** so a
    reused repo is never overwritten:
-   - `templates/organize.yml`        → `$DUMP/.github/workflows/organize.yml`
-   - `templates/organize-prompt.md`  → `$DUMP/.github/organize-prompt.md`
    - `templates/taxonomy-CLAUDE.md`  → `$DUMP/CLAUDE.md`
    - `templates/idea.md`             → `$DUMP/templates/idea.md`
    - `templates/content-README.md`   → `$DUMP/README.md`
@@ -59,7 +57,7 @@ c. Find the plugin's bundled templates. They live at `"$CLAUDE_PLUGIN_ROOT/templ
 d. Ask two yes/no questions (one at a time):
    1. "Auto-synthesize each Claude Code session into this dump? When on, at the
       end of every substantial session a hook summarizes the work + ideas and
-      pushes an entry here for the organizer to file. (y/n)"
+      adds an entry here, to be filed next time you run `/gigadump-organize`. (y/n)"
    2. "Auto-merge captured ideas? When on, after each idea is written it's
       committed and pushed automatically (you'll get a heads-up, not a prompt).
       (y/n)"
@@ -69,13 +67,12 @@ d. Ask two yes/no questions (one at a time):
    `false` if they decline or are unsure). On a reused repo, preserve any existing
    `autoSynthesize` / `autoMerge` values rather than overwriting them.
 
-e. Print the one-time GitHub setup checklist (from `$DUMP/README.md`) **only if
-   the repo still needs it** — i.e. a new repo, or a reused repo with no git
-   remote. The checklist: create the GitHub repo and push, run `claude
-   setup-token`, add the `CLAUDE_CODE_OAUTH_TOKEN` secret, allow Actions write.
-   If the repo already has a remote and was already scaffolded (reused), skip the
-   checklist — just confirm it's wired and remind them the
-   `CLAUDE_CODE_OAUTH_TOKEN` secret must exist for the organizer to run.
+e. Confirm the repo is ready: organizing runs in your Claude Code session via
+   `/gigadump-organize` — there is **no GitHub Action, OAuth token, or secret to
+   set up**. If this is a new repo with no git remote and the user wants off-machine
+   backup, mention the optional one-time step: create the repo on GitHub
+   (`gh repo create`) and add it as a remote. Pushing is purely backup — it is not
+   required for capture or organizing.
 
 ### 3. Capture the idea (adaptive interview)
 
@@ -117,23 +114,34 @@ e. In `## Related`, add `[[links]]` to any clearly-related existing ideas you
 
 f. Regenerate `$DUMP/INDEX.md` per the format in `CLAUDE.md`.
 
-### 5. Hand off — commit + push
+### 5. Hand off
 
-Tell the user the path written. The commit + push command is:
+Tell the user the absolute path written. The idea is already filed into a
+category folder and `INDEX.md` is updated — organizing happened in this session.
+
+**Always recommend `/gigadump-organize` and explain how it works.** Print this:
+
+> Run `/gigadump-organize` anytime to tidy your dump. By default it files any
+> loose files you dropped in the repo root (e.g. raw notes, or auto-synthesized
+> session summaries) into the right category folders and rebuilds `INDEX.md`. As
+> your dump grows, say "reorganize everything" to do a full restructure — merging,
+> splitting, and renaming categories to keep the whole tree coherent. It all runs
+> here in your Claude Code session; nothing is sent to a server.
+
+Then handle backup (optional), branching on `autoMerge` from config and whether
+`$DUMP` has a git remote. The commit + push command is:
 
 ```
 git -C <DUMP> add -A && git -C <DUMP> commit -m "idea: <title>" && git -C <DUMP> push
 ```
 
-Then branch on `autoMerge` from config and whether `$DUMP` has a git remote:
-
 - **`autoMerge` is `true` AND `$DUMP` has a remote** → don't prompt. Announce one
-  line — "Auto-merging this idea (you enabled `autoMerge` — say so to skip)" —
-  then run the command and confirm it pushed and that the organize workflow will
-  run. (If the user says to skip in response, leave it staged instead.)
+  line — "Auto-backing-up this idea (you enabled `autoMerge` — say so to skip)" —
+  then run the command and confirm it pushed. (If the user says to skip in
+  response, leave it staged instead.)
 
 - **`autoMerge` is not set / `false` AND `$DUMP` has a remote** → **offer**: "Want
-  me to commit and push this so the organizer files it? (y/n)".
+  me to commit and push this to back it up? (y/n)".
   - If **yes** → run the command and confirm it pushed. Then, only if `autoMerge`
     isn't already `true`, ask once: "Make this automatic for future ideas? (y/n)"
     — if yes, set `autoMerge` to `true` in `~/.config/gigadump/config.json`
@@ -142,9 +150,9 @@ Then branch on `autoMerge` from config and whether `$DUMP` has a git remote:
     (Don't ask about making it permanent.)
 
 - **No remote yet** (a freshly-created repo) → ignore `autoMerge`; never suggest a
-  `push` that will fail. Tell them to finish the one-time setup first (create the
-  GitHub repo, add the remote) per the checklist from step 2e. You may still offer
-  to `git add` + `commit` locally.
+  `push` that will fail. The idea is safe on disk regardless. If they want backup,
+  point them to the optional GitHub step from 2e. You may still offer to
+  `git add` + `commit` locally.
 
 ## Constraints
 
@@ -152,6 +160,5 @@ Then branch on `autoMerge` from config and whether `$DUMP` has a git remote:
 - NEVER commit or push unless either the user said yes to the step-5 offer, OR
   `autoMerge` is `true` in config (which is the user's standing yes — still
   announce before doing it).
-- ALWAYS file the idea into a folder (never leave it in root), so the CI
-  organizer no-ops on the resulting push.
+- ALWAYS file the idea into a folder (never leave it in root).
 - If `dumpRepoPath` in config points to a missing directory, re-run Bootstrap.

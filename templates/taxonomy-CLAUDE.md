@@ -1,8 +1,8 @@
 # gigaideas — filing conventions
 
 This repo is a self-organizing dump of ideas. These conventions are the single
-source of truth for how ideas get filed. Both the `/gigadump-idea` command and
-the CI organizer (`.github/organize-prompt.md`) follow this file.
+source of truth for how ideas get filed. Both the `/gigadump-idea` and
+`/gigadump-organize` commands follow this file.
 
 ## What this repo holds
 
@@ -37,9 +37,9 @@ EXCEPT these, which are never moved or treated as ideas:
   with relationships, or a sequence between actors). GitHub renders Mermaid
   inline, so these show up as real diagrams.
 - This is added by `/gigadump-idea` at capture time, never forced. Seeds,
-  one-liners, and anything a sentence already conveys get no diagram. The CI
-  organizer never adds, edits, or removes diagrams — it only moves files and
-  rebuilds `INDEX.md`.
+  one-liners, and anything a sentence already conveys get no diagram.
+  `/gigadump-organize` never adds, edits, or removes diagrams — it only moves
+  files and rebuilds `INDEX.md`.
 
 ## File naming
 

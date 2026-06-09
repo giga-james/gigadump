@@ -7,7 +7,7 @@
     {
       "name": "gigadump",
       "source": "./",
-      "description": "Self-organizing idea dump. Capture ideas with /gigadump-idea; a GitHub Action files them into a coherent tree and maintains an index — on your Claude subscription, no API billing."
+      "description": "Self-organizing idea dump. Capture ideas with /gigadump-idea and tidy the tree with /gigadump-organize — Claude files everything into a coherent tree and maintains an index, all in-session. No GitHub Actions, no API keys."
     }
   ]
 }

@@ -5,29 +5,31 @@ A self-organizing dump of ideas, scaffolded by
 
 ## Capture an idea
 
-- **Guided:** run `/gigadump-idea` in Claude Code — it writes the idea and
-  offers to commit + push it for you. Set `"autoMerge": true` in
-  `~/.config/gigadump/config.json` to skip the prompt and commit + push each idea
-  automatically (you still get a heads-up).
-- **Raw dump:** drop any file (`.md`, `.html`, `.txt`, …) in the repo root,
-  commit, and push to `main`.
+- **Guided:** run `/gigadump-idea` in Claude Code — it writes the idea, files it
+  into the right category folder, and updates `INDEX.md`, all in the session. It
+  can optionally commit + push to back the repo up; set `"autoMerge": true` in
+  `~/.config/gigadump/config.json` to do that automatically (you still get a
+  heads-up).
+- **Raw dump:** drop any file (`.md`, `.html`, `.txt`, …) in the repo root, then
+  run `/gigadump-organize` to file it.
 
-## What happens on push
+## Organize
 
-A GitHub Action organizes new root files into category folders and regenerates
-`INDEX.md`. It runs on your Claude subscription (OAuth token) — no API billing.
+Run `/gigadump-organize` in Claude Code to tidy the dump — it all happens in the
+session, with nothing sent to a server.
 
-- Default push → files only new root dumps.
-- Commit message containing `[reorg-all]`, or the manual **Run workflow** button
-  → full re-organization of the whole tree.
+- Default → files any loose files in the repo root into category folders and
+  regenerates `INDEX.md`.
+- Say "reorganize everything" → full re-organization of the whole tree (merge,
+  split, rename categories).
 
 ## Auto-synthesize sessions (optional)
 
 When `autoSynthesize` is `true` in `~/.config/gigadump/config.json`, the gigadump
 plugin installs a `SessionEnd` hook that, at the end of each **substantial**
 Claude Code session (one with file edits, a commit, or several turns), summarizes
-the work plus any ideas that surfaced and pushes an entry here — the organizer
-then files it like any other dump. Trivial sessions are skipped.
+the work plus any ideas that surfaced and adds an entry here — run
+`/gigadump-organize` to file it like any other dump. Trivial sessions are skipped.
 
 - **Turn it on:** set `"autoSynthesize": true` in the config (the `/gigadump-idea`
   bootstrap asks once).
@@ -44,15 +46,10 @@ and, if you're behind, prints a one-line notice at session start with the update
 command. To silence it, set `"updateNotifications": false` in
 `~/.config/gigadump/config.json`.
 
-## One-time setup
+## Backup (optional)
 
-1. Create this repo on GitHub and push.
-2. Run `claude setup-token` to generate a Claude OAuth token.
-3. Add it as a repository secret named `CLAUDE_CODE_OAUTH_TOKEN`
-   (Settings → Secrets and variables → Actions).
-4. Ensure Actions are allowed to write (Settings → Actions → General →
-   Workflow permissions → Read and write). The workflow also declares
-   `contents: write`.
+This dump is just a git repo on disk. For off-machine backup, create it on GitHub
+and push — pushing is purely backup; it is not required for capture or organizing.
 
 See `CLAUDE.md` for filing conventions. `INDEX.md` is auto-maintained — don't
 edit it by hand.
